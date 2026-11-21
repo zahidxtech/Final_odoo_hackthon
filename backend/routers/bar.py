@@ -5,6 +5,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
+from ..errors import AppError
 from ..security import AuthUser, require_roles
 from ..services.bar_service import (
     create_bar_order,
@@ -60,6 +61,13 @@ class CreateBarOrderRequest(BaseModel):
     chargeToTab: bool | None = None
     paymentMethod: Literal["CASH", "CARD", "UPI"] | None = None
     splitPayments: list[PaymentPartInput] | None = None
+    items: list[BarOrderItemInput] = Field(min_length=1)
+    notes: str | None = None
+
+
+class CreateMemberBarOrderRequest(BaseModel):
+    chargeToTab: bool = False
+    paymentMethod: Literal["CARD", "UPI"] = "CARD"
     items: list[BarOrderItemInput] = Field(min_length=1)
     notes: str | None = None
 
@@ -135,6 +143,24 @@ def create_order(
     ),
 ):
     order = create_bar_order({**body.model_dump(), "staffUserId": user.id})
+    return {"order": order}
+
+
+@router.post("/member-orders", status_code=201)
+def create_member_order(
+    body: CreateMemberBarOrderRequest,
+    user: AuthUser = Depends(require_roles("MEMBER")),
+):
+    if user.memberId is None:
+        raise AppError(403, "MEMBER_PROFILE_REQUIRED", "A member profile is required to order.")
+    order = create_bar_order(
+        {
+            **body.model_dump(),
+            "memberId": user.memberId,
+            "tableId": None,
+            "staffUserId": None,
+        }
+    )
     return {"order": order}
 
 

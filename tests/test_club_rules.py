@@ -33,6 +33,8 @@ from backend.services.shop_service import (
 )
 from backend.time_utils import add_days_to_date_str, ist_date_time_to_ms, to_ist_date_string
 from backend.errors import AppError
+from backend.routers.bar import CreateMemberBarOrderRequest, create_member_order
+from backend.security import AuthUser
 
 
 @pytest.fixture()
@@ -439,6 +441,38 @@ def test_rule_10_qr_pass_lookup(club_db):
 
     with pytest.raises(AppError, match="No member profile found"):
         lookup_member_by_qr_token("INVALID-QR-PASS", club_db)
+
+
+def test_member_cafe_order_uses_authenticated_member(monkeypatch, club_db):
+    from backend.services import bar_service
+
+    monkeypatch.setattr(bar_service, "get_db", lambda: club_db)
+    member = club_db.fetch_one(
+        "SELECT id, user_id FROM members WHERE member_code = 'CC-00001'"
+    )
+    menu_item = club_db.fetch_one(
+        "SELECT id FROM menu_items WHERE is_available = 1 ORDER BY id LIMIT 1"
+    )
+    assert member is not None
+    assert menu_item is not None
+
+    result = create_member_order(
+        CreateMemberBarOrderRequest(
+            chargeToTab=True,
+            items=[{"menuItemId": menu_item["id"], "quantity": 1}],
+        ),
+        AuthUser(
+            id=member["userId"],
+            email="member@club.com",
+            fullName="Member",
+            role="MEMBER",
+            memberId=member["id"],
+        ),
+    )
+
+    assert result["order"]["memberId"] == member["id"]
+    assert result["order"]["tableId"] is None
+    assert result["order"]["billingStatus"] == "ON_TAB"
 
 
 def test_fastapi_http_endpoints_smoke():

@@ -21,6 +21,7 @@ import { MemberDashboardPage } from './pages/member/MemberDashboardPage';
 import { MemberBookingsPage } from './pages/member/MemberBookingsPage';
 import { MemberCardPage } from './pages/member/MemberCardPage';
 import { MemberShopPage } from './pages/member/MemberShopPage';
+import { MemberCafePage } from './pages/member/MemberCafePage';
 import { MemberHistoryPage } from './pages/member/MemberHistoryPage';
 
 import { FrontDeskPage } from './pages/staff/FrontDeskPage';
@@ -113,6 +114,7 @@ export default function App() {
                     <Route path="bookings" element={<MemberBookingsPage />} />
                     <Route path="card" element={<MemberCardPage />} />
                     <Route path="shop" element={<MemberShopPage />} />
+                    <Route path="cafe" element={<MemberCafePage />} />
                     <Route path="history" element={<MemberHistoryPage />} />
                   </Route>
 

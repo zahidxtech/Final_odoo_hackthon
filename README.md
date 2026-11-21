@@ -18,9 +18,9 @@ npm install
 npm run setup
 npm run dev
 ```
-The Python FastAPI (`uvicorn` on `127.0.0.1:8001`) + Vite (`0.0.0.0:3000`) stack serves the unified app on **`http://localhost:3000`**.
-- **Interactive API Docs (FastAPI OpenAPI / Swagger UI):** `http://localhost:3000/api/docs`
-- **Health Check:** `http://localhost:3000/api/health`
+The Python FastAPI (`uvicorn` on `127.0.0.1:8001`) + Vite (`0.0.0.0:3005`) stack serves the unified app on **`http://localhost:3005`**.
+- **Interactive API Docs (FastAPI OpenAPI / Swagger UI):** `http://localhost:3005/api/docs`
+- **Health Check:** `http://localhost:3005/api/health`
 
 ### Useful Commands
 | Command | Purpose |
@@ -28,7 +28,7 @@ The Python FastAPI (`uvicorn` on `127.0.0.1:8001`) + Vite (`0.0.0.0:3000`) stack
 | `npm run dev` | Start Python FastAPI Uvicorn + Vite dev server on port `3000` (auto-migrates & seeds if DB is empty) |
 | `npm run setup` | Run SQLite migrations + deterministic rich seed (`python3 -m backend.seed`) |
 | `npm run build` | Build production frontend bundle (`dist/`) |
-| `npm start` | Run production FastAPI server serving `dist/` (`NODE_ENV=production python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 3000`) |
+| `npm start` | Run production FastAPI server serving `dist/` on `http://localhost:3005` |
 | `npm test` | Run `pytest` automated business-rule & FastAPI HTTP test suite |
 | `npm run lint` | Run TypeScript type-check (`tsc --noEmit`) |
 

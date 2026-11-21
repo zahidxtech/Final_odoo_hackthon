@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   Calendar,
+  Coffee,
   CreditCard,
   History,
   Home,
@@ -36,6 +37,7 @@ export function MemberLayout() {
     { to: '/member/bookings', label: 'Courts', icon: Calendar },
     { to: '/member/card', label: 'Club Card', icon: CreditCard },
     { to: '/member/shop', label: 'Pro Shop', icon: ShoppingBag },
+    { to: '/member/cafe', label: 'Cafe', icon: Coffee },
     { to: '/member/history', label: 'History', icon: History },
   ];
 
@@ -136,7 +138,7 @@ export function MemberLayout() {
       </div>
 
       {/* Mobile Fixed Bottom Tab Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-[#0A1324]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 grid grid-cols-5 items-center">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-[#0A1324]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 grid grid-cols-6 items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (

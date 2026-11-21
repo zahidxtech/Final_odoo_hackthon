@@ -13,8 +13,8 @@ const viteBin = process.platform === 'win32'
   : path.join(rootDir, 'node_modules', '.bin', 'vite');
 const viteCmd = fs.existsSync(viteBin) ? viteBin : 'npx';
 const viteArgs = fs.existsSync(viteBin)
-  ? ['--port', '3000', '--host', '0.0.0.0']
-  : ['vite', '--port', '3000', '--host', '0.0.0.0'];
+  ? ['--port', '3005', '--host', '0.0.0.0']
+  : ['vite', '--port', '3005', '--host', '0.0.0.0'];
 
 const vite = spawn(viteCmd, viteArgs, {
   cwd: rootDir,
