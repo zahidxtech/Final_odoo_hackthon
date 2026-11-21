@@ -1,0 +1,6 @@
+{
+  "name": "Alpha Sports Club",
+  "description": "Unified Sports Club Management System for court bookings, memberships, pro shop inventory, bar & KDS, CRM, HR, and owner analytics.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
