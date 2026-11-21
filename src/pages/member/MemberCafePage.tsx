@@ -67,9 +67,18 @@ export function MemberCafePage() {
   const total = subtotal - discount + tax;
 
   const setQuantity = (itemId: number, quantity: number) => {
-    setCart((current) => quantity <= 0
-      ? current.filter((entry) => entry.menuItemId !== itemId)
-      : current.map((entry) => entry.menuItemId === itemId ? { ...entry, quantity } : entry));
+    setCart((current) => {
+      const existing = current.some((entry) => entry.menuItemId === itemId);
+      if (quantity <= 0) {
+        return current.filter((entry) => entry.menuItemId !== itemId);
+      }
+      if (!existing) {
+        return [...current, { menuItemId: itemId, quantity }];
+      }
+      return current.map((entry) =>
+        entry.menuItemId === itemId ? { ...entry, quantity } : entry,
+      );
+    });
   };
 
   const placeOrder = async () => {
