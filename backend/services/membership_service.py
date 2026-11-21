@@ -253,8 +253,9 @@ def register_member(
             user_row = db.insert_returning(
                 """
                 INSERT INTO users
-                  (email, password_hash, full_name, phone, role_id, is_active, created_at)
-                VALUES (?, ?, ?, ?, ?, 1, ?)
+                  (email, password_hash, full_name, phone, role_id, is_active,
+                   email_verified, created_at)
+                VALUES (?, ?, ?, ?, ?, 1, ?, ?)
                 RETURNING *
                 """,
                 (
@@ -263,6 +264,7 @@ def register_member(
                     str(data["fullName"]).strip(),
                     str(data["phone"]).strip(),
                     member_role["id"],
+                    0 if data.get("emailVerified") is False else 1,
                     created_at,
                 ),
             )
@@ -346,8 +348,17 @@ def register_member(
             ),
         )
 
-        inv_cnt_row = db.fetch_one("SELECT COUNT(*) AS cnt FROM invoices")
-        inv_count = (inv_cnt_row["cnt"] if inv_cnt_row else 0) + 1
+        inv_number_row = db.fetch_one(
+            """
+            SELECT COALESCE(
+              MAX(CAST(SUBSTR(invoice_number, LENGTH('INV-MEM-') + 1) AS INTEGER)),
+              0
+            ) + 1 AS next_number
+            FROM invoices
+            WHERE invoice_number LIKE 'INV-MEM-%'
+            """
+        )
+        inv_number = inv_number_row["nextNumber"]
         subtotal = price_paid - tax_paise
         inv = db.insert_returning(
             """
@@ -358,7 +369,7 @@ def register_member(
             RETURNING *
             """,
             (
-                f"INV-MEM-{inv_count:04d}",
+                f"INV-MEM-{inv_number:04d}",
                 member["id"],
                 today,
                 today,

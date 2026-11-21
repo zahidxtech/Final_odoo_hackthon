@@ -9,7 +9,9 @@ from ..security import AuthUser, clear_auth_cookie, require_auth, set_auth_cooki
 from ..services.auth_service import (
     get_current_user_profile,
     login_user,
+    request_email_login_otp,
     register_public_member,
+    verify_email_login_otp,
 )
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -18,6 +20,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6)
+
+
+class EmailOtpVerificationRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyEmailOtpRequest(EmailOtpVerificationRequest):
+    code: str = Field(pattern=r"^\d{6}$")
 
 
 class RegisterRequest(BaseModel):
@@ -36,6 +46,15 @@ class RegisterRequest(BaseModel):
 @router.post("/login")
 def login(body: LoginRequest, response: Response):
     result = login_user(body.email, body.password)
+    if result.get("requiresEmailVerification"):
+        return result
+    set_auth_cookie(response, result["token"])
+    return {**result, "requiresEmailVerification": False}
+
+
+@router.post("/otp/verify")
+def verify_otp(body: VerifyEmailOtpRequest, response: Response):
+    result = verify_email_login_otp(body.email, body.code)
     set_auth_cookie(response, result["token"])
     return result
 
@@ -43,8 +62,9 @@ def login(body: LoginRequest, response: Response):
 @router.post("/register", status_code=201)
 def register(body: RegisterRequest, response: Response):
     result = register_public_member(body.model_dump())
-    set_auth_cookie(response, result["token"])
-    return result
+    email = result["user"]["email"]
+    request_email_login_otp(email)
+    return {"requiresEmailVerification": True, "email": email}
 
 
 @router.post("/logout")

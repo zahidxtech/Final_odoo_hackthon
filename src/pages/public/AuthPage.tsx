@@ -5,23 +5,16 @@ import { useToast } from '../../context/ToastContext';
 import { ApiError } from '../../lib/api';
 import { calculateAgeFromDob } from '../../lib/format';
 
-const DEMO_ACCOUNTS: Array<{ label: string; email: string; role: UserRole }> = [
-  { label: 'Owner', email: 'owner@club.com', role: 'OWNER' },
-  { label: 'Manager', email: 'manager@club.com', role: 'MANAGER' },
-  { label: 'Front Desk', email: 'frontdesk@club.com', role: 'FRONT_DESK' },
-  { label: 'Bar Staff', email: 'bar@club.com', role: 'BAR_STAFF' },
-  { label: 'Shop Staff', email: 'shop@club.com', role: 'SHOP_STAFF' },
-  { label: 'Member (Gold)', email: 'member@club.com', role: 'MEMBER' },
-];
-
 export function AuthPage() {
   const [searchParams] = useSearchParams();
   const initialMode = searchParams.get('mode') === 'register' ? 'register' : 'login';
   const initialPlan = (searchParams.get('plan') as 'GOLD' | 'SILVER' | 'JUNIOR') || 'GOLD';
 
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
-  const [email, setEmail] = useState('member@club.com');
-  const [password, setPassword] = useState('Password@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Registration state
@@ -36,7 +29,7 @@ export function AuthPage() {
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'UPI' | 'ONLINE'>('UPI');
 
-  const { user, login, register } = useAuth();
+  const { user, login, verifyEmailOtp, register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -67,9 +60,15 @@ export function AuthPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const loggedIn = await login(email, password);
-      toast(`Signed in as ${loggedIn.fullName}`, 'success');
-      navigate(routeByRole(loggedIn.role));
+      const result = await login(email, password);
+      if (result.requiresEmailVerification) {
+        setVerificationEmail(result.email);
+        setOtpCode('');
+        toast('Check your email for a verification code.', 'info');
+      } else {
+        toast(`Signed in as ${result.user.fullName}`, 'success');
+        navigate(routeByRole(result.user.role));
+      }
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Login failed.', 'error');
     } finally {
@@ -77,14 +76,16 @@ export function AuthPage() {
     }
   };
 
-  const handleQuickDemo = async (demoEmail: string) => {
+  const handleEmailVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verificationEmail) return;
     setSubmitting(true);
     try {
-      const loggedIn = await login(demoEmail, 'Password@123');
-      toast(`Signed in as ${loggedIn.fullName} (${loggedIn.role})`, 'success');
+      const loggedIn = await verifyEmailOtp(verificationEmail, otpCode);
+      toast(`Signed in as ${loggedIn.fullName}`, 'success');
       navigate(routeByRole(loggedIn.role));
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Demo login failed.', 'error');
+      toast(err instanceof ApiError ? err.message : 'Email verification failed.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +95,7 @@ export function AuthPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const created = await register({
+      const challenge = await register({
         fullName,
         email: regEmail,
         phone,
@@ -106,8 +107,11 @@ export function AuthPage() {
         emergencyContactPhone,
         paymentMethod,
       });
-      toast(`Welcome to Alpha Sports Club, ${created.fullName}!`, 'success');
-      navigate('/member');
+      setEmail(challenge.email);
+      setPassword(regPassword);
+      setVerificationEmail(challenge.email);
+      setOtpCode('');
+      toast('Check your email to verify your new account.', 'info');
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Registration failed.', 'error');
     } finally {
@@ -130,6 +134,7 @@ export function AuthPage() {
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg self-start">
             <button
               type="button"
+              disabled={Boolean(verificationEmail)}
               onClick={() => setMode('login')}
               className={`px-4 py-1.5 rounded-md text-xs font-semibold ${
                 mode === 'login' ? 'bg-white dark:bg-lime-400 text-slate-950 shadow-sm' : 'text-slate-500'
@@ -139,6 +144,7 @@ export function AuthPage() {
             </button>
             <button
               type="button"
+              disabled={Boolean(verificationEmail)}
               onClick={() => setMode('register')}
               className={`px-4 py-1.5 rounded-md text-xs font-semibold ${
                 mode === 'register' ? 'bg-white dark:bg-lime-400 text-slate-950 shadow-sm' : 'text-slate-500'
@@ -149,7 +155,56 @@ export function AuthPage() {
           </div>
         </div>
 
-        {mode === 'login' ? (
+        {verificationEmail ? (
+          <div className="max-w-lg mx-auto space-y-5">
+            <div>
+              <h2 className="font-display text-xl font-bold text-slate-900 dark:text-white">
+                Verify your email
+              </h2>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Enter the six-digit code sent to <strong>{verificationEmail}</strong>. Check your spam folder too.
+              </p>
+            </div>
+            <form onSubmit={handleEmailVerification} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  Verification code
+                </label>
+                <input
+                  required
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]{6}"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm tracking-[0.3em]"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 rounded-xl bg-lime-400 text-slate-950 font-semibold text-sm hover:bg-lime-300 disabled:opacity-50"
+              >
+                {submitting ? 'Verifying...' : 'Verify email and continue'}
+              </button>
+            </form>
+            <p className="text-xs text-slate-500">
+              Didn’t receive a code? Return to sign in and submit your password again to request another.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setVerificationEmail(null);
+                setOtpCode('');
+                setMode('login');
+              }}
+              className="text-xs font-medium text-slate-500 hover:text-lime-600"
+            >
+              Back to sign in
+            </button>
+          </div>
+        ) : mode === 'login' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <form onSubmit={handleLogin} className="lg:col-span-7 space-y-4">
               <div>
@@ -182,24 +237,11 @@ export function AuthPage() {
             </form>
 
             <div className="lg:col-span-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
-              <div className="text-xs font-semibold text-slate-900 dark:text-white">Quick Demo Access</div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Seeded role accounts (password: <code className="font-mono">Password@123</code>):
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Email verification</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Every sign-in and new registration requires a one-time code sent to the email on the account.
+                Use an address whose inbox you can access; sample demo accounts may not receive mail.
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {DEMO_ACCOUNTS.map((acc) => (
-                  <button
-                    key={acc.email}
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => handleQuickDemo(acc.email)}
-                    className="text-left px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-lime-400 bg-white dark:bg-slate-900 text-xs transition-colors"
-                  >
-                    <div className="font-semibold text-slate-900 dark:text-white">{acc.label}</div>
-                    <div className="text-[10px] text-slate-500 truncate">{acc.email}</div>
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         ) : (

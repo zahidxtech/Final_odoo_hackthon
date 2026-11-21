@@ -10,6 +10,7 @@ from .config import get_database_path
 
 BOOL_COLUMNS = frozenset({
     "is_active",
+    "email_verified",
     "auto_renew",
     "is_indoor",
     "is_available",
@@ -32,7 +33,18 @@ CREATE TABLE IF NOT EXISTS users (
   phone TEXT NOT NULL,
   role_id INTEGER NOT NULL REFERENCES roles(id),
   is_active INTEGER NOT NULL DEFAULT 1,
+  email_verified INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS email_login_otps (
+  email TEXT PRIMARY KEY,
+  code_hash TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_sent_at INTEGER NOT NULL,
+  window_started_at INTEGER NOT NULL,
+  request_count INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS membership_plans (
@@ -659,6 +671,11 @@ def create_db_connection(db_path: str = ":memory:") -> Database:
 def run_migrations(db: Database | None = None) -> None:
     target = db or get_db()
     target.exec_script(SCHEMA_SQL)
+    user_columns = target.fetch_all("PRAGMA table_info(users)")
+    if not any(column["name"] == "email_verified" for column in user_columns):
+        target.execute(
+            "ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1"
+        )
     target.execute("PRAGMA foreign_keys = ON;")
 
 

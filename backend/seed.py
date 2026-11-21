@@ -43,7 +43,7 @@ def seed_database(db: Database | None = None, *, reset: bool = True) -> None:
             "delivery_info", "shop_order_items", "shop_orders", "stock_movements",
             "product_variants", "products", "suppliers",
             "social_participants", "social_sessions", "bookings", "court_blocks", "courts",
-            "memberships", "members", "membership_plans", "users", "roles",
+            "memberships", "members", "membership_plans", "email_login_otps", "users", "roles",
         ]
         for tbl in tables:
             db.execute(f"DELETE FROM {tbl};")

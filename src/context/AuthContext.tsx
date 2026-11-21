@@ -13,10 +13,20 @@ export interface AuthUser {
   memberCode?: string | null;
 }
 
+export type EmailVerificationChallenge = {
+  requiresEmailVerification: true;
+  email: string;
+};
+
+export type LoginResult =
+  | EmailVerificationChallenge
+  | { requiresEmailVerification: false; user: AuthUser };
+
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<AuthUser>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verifyEmailOtp: (email: string, code: string) => Promise<AuthUser>;
   register: (payload: {
     fullName: string;
     email: string;
@@ -28,7 +38,7 @@ interface AuthContextValue {
     emergencyContactName: string;
     emergencyContactPhone: string;
     paymentMethod: 'CARD' | 'UPI' | 'ONLINE';
-  }) => Promise<AuthUser>;
+  }) => Promise<EmailVerificationChallenge>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -37,6 +47,9 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
   login: async () => {
+    throw new Error('AuthProvider missing');
+  },
+  verifyEmailOtp: async () => {
     throw new Error('AuthProvider missing');
   },
   register: async () => {
@@ -66,10 +79,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const login = async (email: string, password: string) => {
-    const res = await apiFetch<{ token: string; user: AuthUser }>('/auth/login', {
+  const login = async (email: string, password: string): Promise<LoginResult> => {
+    const res = await apiFetch<
+      | EmailVerificationChallenge
+      | { requiresEmailVerification: false; token: string; user: AuthUser }
+    >('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+    });
+    if (res.requiresEmailVerification) return res;
+    setAuthToken(res.token);
+    setUser(res.user);
+    const loginResult: LoginResult = {
+      requiresEmailVerification: false,
+      user: res.user,
+    };
+    return loginResult;
+  };
+
+  const verifyEmailOtp = async (email: string, code: string) => {
+    const res = await apiFetch<{ token: string; user: AuthUser }>('/auth/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
     });
     setAuthToken(res.token);
     setUser(res.user);
@@ -87,14 +118,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     emergencyContactName: string;
     emergencyContactPhone: string;
     paymentMethod: 'CARD' | 'UPI' | 'ONLINE';
-  }) => {
-    const res = await apiFetch<{ token: string; user: AuthUser }>('/auth/register', {
+  }): Promise<EmailVerificationChallenge> => {
+    return apiFetch<EmailVerificationChallenge>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    setAuthToken(res.token);
-    setUser(res.user);
-    return res.user;
   };
 
   const logout = async () => {
@@ -107,7 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, verifyEmailOtp, register, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

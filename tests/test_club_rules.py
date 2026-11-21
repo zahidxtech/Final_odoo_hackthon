@@ -475,7 +475,245 @@ def test_member_cafe_order_uses_authenticated_member(monkeypatch, club_db):
     assert result["order"]["billingStatus"] == "ON_TAB"
 
 
-def test_fastapi_http_endpoints_smoke():
+def test_email_otp_login_is_single_use(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    sent_codes: list[tuple[str, str]] = []
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda email, code, _sender, _password: sent_codes.append((email, code)),
+    )
+
+    requested = auth_service.request_email_login_otp("MEMBER@CLUB.COM", club_db)
+    assert requested["ok"] is True
+    assert sent_codes[0][0] == "member@club.com"
+    assert len(sent_codes[0][1]) == 6
+
+    result = auth_service.verify_email_login_otp(
+        "member@club.com", sent_codes[0][1], club_db
+    )
+    assert result["user"]["email"] == "member@club.com"
+    assert result["user"]["role"] == "MEMBER"
+    assert result["user"]["memberId"] is not None
+    assert result["token"]
+
+    with pytest.raises(AppError) as error:
+        auth_service.verify_email_login_otp(
+            "member@club.com", sent_codes[0][1], club_db
+        )
+    assert error.value.code == "INVALID_OTP"
+
+
+def test_email_otp_does_not_send_to_unknown_accounts(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    sent_codes: list[str] = []
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda email, _code, _sender, _password: sent_codes.append(email),
+    )
+
+    response = auth_service.request_email_login_otp("unknown@example.com", club_db)
+    assert response["ok"] is True
+    assert sent_codes == []
+
+
+def test_email_otp_requires_gmail_configuration(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "")
+
+    with pytest.raises(AppError) as error:
+        auth_service.request_email_login_otp("member@club.com", club_db)
+    assert error.value.code == "EMAIL_OTP_NOT_CONFIGURED"
+
+
+def test_email_otp_limits_verification_attempts(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    sent_codes: list[str] = []
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda _email, code, _sender, _password: sent_codes.append(code),
+    )
+    auth_service.request_email_login_otp("member@club.com", club_db)
+
+    for attempt in range(auth_service.OTP_MAX_ATTEMPTS):
+        with pytest.raises(AppError) as error:
+            auth_service.verify_email_login_otp(
+                "member@club.com", "000000" if sent_codes[0] != "000000" else "000001", club_db
+            )
+        if attempt + 1 == auth_service.OTP_MAX_ATTEMPTS:
+            assert error.value.code == "OTP_ATTEMPTS_EXCEEDED"
+        else:
+            assert error.value.code == "INVALID_OTP"
+
+
+def test_email_otp_http_flow_sets_auth_cookie(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    monkeypatch.setattr(auth_service, "get_db", lambda: club_db)
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    sent_codes: list[str] = []
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda _email, code, _sender, _password: sent_codes.append(code),
+    )
+    with TestClient(create_app()) as client:
+        login = client.post(
+            "/api/v1/auth/login",
+            json={"email": "member@club.com", "password": "Password@123"},
+        )
+        assert login.status_code == 200
+        assert login.json()["requiresEmailVerification"] is True
+        assert "token" not in login.json()
+        assert "cc_token" not in login.cookies
+
+        verify = client.post(
+            "/api/v1/auth/otp/verify",
+            json={"email": "member@club.com", "code": sent_codes[0]},
+        )
+
+    assert verify.status_code == 200
+    assert verify.json()["user"]["email"] == "member@club.com"
+    assert "cc_token" in verify.cookies
+    verified = club_db.fetch_one(
+        "SELECT email_verified FROM users WHERE email = ?",
+        ("member@club.com",),
+    )
+    assert verified["emailVerified"] is True
+
+
+def test_public_registration_requires_email_verification(club_db):
+    from backend.services.auth_service import register_public_member
+
+    registration = register_public_member(
+        {
+            "fullName": "Email Verify Registration",
+            "email": "verify.registration@example.com",
+            "phone": "+91 98000 12345",
+            "password": "Password@123",
+            "dob": "1992-05-15",
+            "planCode": "SILVER",
+            "billingCycle": "MONTHLY",
+            "emergencyContactName": "Emergency Contact",
+            "emergencyContactPhone": "+91 98000 54321",
+            "paymentMethod": "UPI",
+        },
+        club_db,
+    )
+    account = club_db.fetch_one(
+        "SELECT email_verified FROM users WHERE id = ?",
+        (registration["user"]["id"],),
+    )
+    assert account["emailVerified"] is False
+
+
+def test_membership_invoice_number_skips_deleted_numbers(club_db):
+    club_db.execute("DELETE FROM invoice_items")
+    club_db.execute("DELETE FROM invoices")
+
+    def register(email: str):
+        return register_member(
+            {
+                "fullName": "Invoice Sequence Member",
+                "email": email,
+                "phone": "+91 98000 12345",
+                "dob": "1992-05-15",
+                "emergencyContactName": "Emergency Contact",
+                "emergencyContactPhone": "+91 98000 54321",
+                "planCode": "SILVER",
+                "billingCycle": "MONTHLY",
+                "paymentMethod": "UPI",
+            },
+            club_db,
+        )
+
+    first = register("invoice.first@example.com")
+    second = register("invoice.second@example.com")
+    first_invoice = club_db.fetch_one(
+        "SELECT id FROM invoices WHERE member_id = ?",
+        (first["member"]["id"],),
+    )
+    club_db.execute(
+        "DELETE FROM invoice_items WHERE invoice_id = ?", (first_invoice["id"],)
+    )
+    club_db.execute("DELETE FROM invoices WHERE id = ?", (first_invoice["id"],))
+
+    third = register("invoice.third@example.com")
+    invoice_numbers = club_db.fetch_all(
+        """
+        SELECT invoice_number FROM invoices
+        WHERE member_id IN (?, ?)
+        """,
+        (second["member"]["id"], third["member"]["id"]),
+    )
+
+    assert len({row["invoiceNumber"] for row in invoice_numbers}) == 2
+
+
+def test_registration_http_sends_verification_code_without_signing_in(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    monkeypatch.setattr(auth_service, "get_db", lambda: club_db)
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    sent_to: list[str] = []
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda email, _code, _sender, _password: sent_to.append(email),
+    )
+
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/api/v1/auth/register",
+            json={
+                "fullName": "HTTP Email Verify",
+                "email": "http.verify@example.com",
+                "phone": "+91 98000 12346",
+                "password": "Password@123",
+                "dob": "1992-05-15",
+                "planCode": "SILVER",
+                "billingCycle": "MONTHLY",
+                "emergencyContactName": "Emergency Contact",
+                "emergencyContactPhone": "+91 98000 54322",
+                "paymentMethod": "UPI",
+            },
+        )
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "requiresEmailVerification": True,
+        "email": "http.verify@example.com",
+    }
+    assert sent_to == ["http.verify@example.com"]
+    assert "cc_token" not in response.cookies
+
+
+def test_fastapi_http_endpoints_smoke(monkeypatch):
+    from backend.services import auth_service
+
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    sent_codes: list[str] = []
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda _email, code, _sender, _password: sent_codes.append(code),
+    )
     app = create_app()
     with TestClient(app) as client:
         h = client.get("/api/health")
@@ -490,7 +728,14 @@ def test_fastapi_http_endpoints_smoke():
             json={"email": "owner@club.com", "password": "Password@123"},
         )
         assert login.status_code == 200
-        token = login.json()["token"]
+        assert login.json()["requiresEmailVerification"] is True
+        assert "token" not in login.json()
+        verification = client.post(
+            "/api/v1/auth/otp/verify",
+            json={"email": "owner@club.com", "code": sent_codes[0]},
+        )
+        assert verification.status_code == 200
+        token = verification.json()["token"]
         headers = {"Authorization": f"Bearer {token}"}
 
         assert client.get("/api/v1/auth/me", headers=headers).status_code == 200
