@@ -664,13 +664,32 @@ def seed_database(db: Database | None = None, *, reset: bool = True) -> None:
         ]
 
         variant_rows: list[dict[str, Any]] = []
+        product_images = {
+            "Pro Staff v14 Carbon Racket": "/src/assets/images/products/alpha-tennis-racket-yellow.webp",
+            "Pure Aero Spin Tennis Frame": "/src/assets/images/products/alpha-tennis-racket-black.webp",
+            "Speed MP Graphene Racket": "/src/assets/images/products/alpha-tennis-racket-yellow-alt.png",
+            "Vertex 04 Pro Padel Bat": "/src/assets/images/products/alpha-padel-racket-red.webp",
+            "AT10 Genius Padel Racket": "/src/assets/images/products/alpha-padel-racket-nox.webp",
+            "Astrox 99 Badminton Frame": "/src/assets/images/products/alpha-badminton-racket-red.webp",
+            'Junior Pro 25" Tennis Racket': "/src/assets/images/products/alpha-tennis-racket-black-alt.png",
+            "English Willow Grade-A Cricket Bat": "/src/assets/images/products/alpha-cricket-bat.webp",
+            "Tour Championship Tennis Balls (4-Can)": "/src/assets/images/products/alpha-tennis-balls-4-can.webp",
+            "US Open Extra Duty Ball Case (18 Cans)": "/src/assets/images/products/alpha-tennis-ball-case.webp",
+            "Pro S Padel Balls (3-Can)": "/src/assets/images/products/alpha-tennis-balls-can.webp",
+            "4-Piece Leather Match Cricket Ball": "/src/assets/images/products/alpha-cricket-match-ball.webp",
+            "Aerosensa 50 Feather Shuttlecocks (12)": "/src/assets/images/products/alpha-badminton-shuttle-tube.webp",
+            "Practice Pressureless Tennis Bucket (60)": "/src/assets/images/products/alpha-tennis-balls-bucket.webp",
+            "Indoor Cricket Soft Training Balls (6)": "/src/assets/images/products/alpha-cricket-soft-balls-box.webp",
+            "Mavis 350 Nylon Shuttles (6)": "/src/assets/images/products/alpha-badminton-shuttle-tube-alt.webp",
+        }
         for idx, (pname, pcat, pbrand, pprice, pcost, psizes, low_stock) in enumerate(catalog_seed):
             sku = f"CC-{pcat[:3]}-{idx + 1:03d}"
+            image_url = product_images.get(pname, "/src/assets/images/shop_pro_gear_1795254057097.jpg")
             prod = db.insert_returning(
                 """
                 INSERT INTO products
                   (name, sku, category, brand, description, image_url, price_paise, cost_price_paise, reorder_level, is_active, created_at)
-                VALUES (?, ?, ?, ?, ?, '/src/assets/images/shop_pro_gear_1795254057097.jpg', ?, ?, 6, 1, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 6, 1, ?)
                 RETURNING *
                 """,
                 (
@@ -679,6 +698,7 @@ def seed_database(db: Database | None = None, *, reset: bool = True) -> None:
                     pcat,
                     pbrand,
                     f"Tournament-grade {pbrand} {pname.lower()} engineered for club performance.",
+                    image_url,
                     pprice,
                     pcost,
                     created_at,
