@@ -524,6 +524,62 @@ def test_email_otp_does_not_send_to_unknown_accounts(monkeypatch, club_db):
     assert sent_codes == []
 
 
+def test_email_otp_is_only_sent_to_members(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    sent_codes: list[str] = []
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
+    monkeypatch.setattr(
+        auth_service,
+        "_send_login_otp_email",
+        lambda email, _code, _sender, _password: sent_codes.append(email),
+    )
+
+    response = auth_service.request_email_login_otp("owner@club.com", club_db)
+
+    assert response["ok"] is True
+    assert sent_codes == []
+
+
+def test_email_otp_cannot_authenticate_staff(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    email = "owner@club.com"
+    code = "123456"
+    now = int(auth_service.time.time())
+    club_db.execute(
+        """
+        INSERT INTO email_login_otps
+          (email, code_hash, expires_at, attempts, last_sent_at, window_started_at, request_count)
+        VALUES (?, ?, ?, 0, ?, ?, 1)
+        """,
+        (email, auth_service._email_otp_hash(email, code), now + 600, now, now),
+    )
+
+    with pytest.raises(AppError) as error:
+        auth_service.verify_email_login_otp(email, code, club_db)
+
+    assert error.value.code == "INVALID_OTP"
+
+
+def test_staff_and_owner_login_without_email_otp(monkeypatch, club_db):
+    from backend.services import auth_service
+
+    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "")
+    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "")
+
+    for email, expected_role in (
+        ("owner@club.com", "OWNER"),
+        ("manager@club.com", "MANAGER"),
+        ("frontdesk@club.com", "FRONT_DESK"),
+    ):
+        result = auth_service.login_user(email, "Password@123", club_db)
+        assert result["requiresEmailVerification"] is False
+        assert result["user"]["role"] == expected_role
+        assert result["token"]
+
+
 def test_email_otp_requires_gmail_configuration(monkeypatch, club_db):
     from backend.services import auth_service
 
@@ -703,17 +759,7 @@ def test_registration_http_sends_verification_code_without_signing_in(monkeypatc
     assert "cc_token" not in response.cookies
 
 
-def test_fastapi_http_endpoints_smoke(monkeypatch):
-    from backend.services import auth_service
-
-    monkeypatch.setattr(auth_service, "get_gmail_address", lambda: "club@example.com")
-    monkeypatch.setattr(auth_service, "get_gmail_app_password", lambda: "app-password")
-    sent_codes: list[str] = []
-    monkeypatch.setattr(
-        auth_service,
-        "_send_login_otp_email",
-        lambda _email, code, _sender, _password: sent_codes.append(code),
-    )
+def test_fastapi_http_endpoints_smoke():
     app = create_app()
     with TestClient(app) as client:
         h = client.get("/api/health")
@@ -728,14 +774,9 @@ def test_fastapi_http_endpoints_smoke(monkeypatch):
             json={"email": "owner@club.com", "password": "Password@123"},
         )
         assert login.status_code == 200
-        assert login.json()["requiresEmailVerification"] is True
-        assert "token" not in login.json()
-        verification = client.post(
-            "/api/v1/auth/otp/verify",
-            json={"email": "owner@club.com", "code": sent_codes[0]},
-        )
-        assert verification.status_code == 200
-        token = verification.json()["token"]
+        assert login.json()["requiresEmailVerification"] is False
+        assert login.json()["user"]["role"] == "OWNER"
+        token = login.json()["token"]
         headers = {"Authorization": f"Bearer {token}"}
 
         assert client.get("/api/v1/auth/me", headers=headers).status_code == 200

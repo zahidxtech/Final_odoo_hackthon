@@ -80,7 +80,11 @@ def request_email_login_otp(
     db = db or get_db()
     normalized_email = email.strip().lower()
     user_row = db.fetch_one(
-        "SELECT id FROM users WHERE email = ? AND is_active = 1",
+        """
+        SELECT u.id FROM users u
+        INNER JOIN roles r ON u.role_id = r.id
+        WHERE u.email = ? AND u.is_active = 1 AND r.name = 'MEMBER'
+        """,
         (normalized_email,),
     )
     if not user_row:
@@ -251,7 +255,11 @@ def verify_email_login_otp(
             db.execute(
                 "DELETE FROM email_login_otps WHERE email = ?", (normalized_email,)
             )
-            if not user_row or not user_row["isActive"]:
+            if (
+                not user_row
+                or not user_row["isActive"]
+                or user_row["roleName"] != "MEMBER"
+            ):
                 error = AppError(401, "INVALID_OTP", "The code is invalid or expired.")
             else:
                 db.execute(
@@ -287,6 +295,12 @@ def login_user(
 
     if not verify_password(password, user_row["passwordHash"]):
         raise AppError(401, "INVALID_CREDENTIALS", "Invalid email or password.")
+
+    if user_row["roleName"] != "MEMBER":
+        return {
+            "requiresEmailVerification": False,
+            **_build_login_result(user_row, db),
+        }
 
     request_email_login_otp(normalized_email, db)
     return {

@@ -237,10 +237,10 @@ export function AuthPage() {
             </form>
 
             <div className="lg:col-span-5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
-              <div className="text-xs font-semibold text-slate-900 dark:text-white">Email verification</div>
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Sign-in methods</div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Every sign-in and new registration requires a one-time code sent to the email on the account.
-                Use an address whose inbox you can access; sample demo accounts may not receive mail.
+                Members receive a one-time code by email when signing in. Owners and staff sign in with
+                their email and password. New member registrations require email verification.
               </p>
             </div>
           </div>

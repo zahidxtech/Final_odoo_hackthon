@@ -17,6 +17,7 @@ from ..services.shop_service import (
     restock_or_adjust_variant,
     update_shop_order_status,
 )
+from ..services.telegram_service import notify_shop_order_created
 
 router = APIRouter(prefix="/shop", tags=["Shop & Inventory"])
 
@@ -174,6 +175,7 @@ def orders_create(
         "memberId": effective_member,
         "actorUserId": user.id if user else None,
     })
+    notify_shop_order_created(order)
     return {"order": order}
 
 

@@ -29,6 +29,14 @@ def get_gmail_app_password() -> str:
     return os.environ.get("GMAIL_APP_PASSWORD", "").strip()
 
 
+def get_telegram_bot_token() -> str:
+    return os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+
+
+def get_telegram_chat_id() -> str:
+    return os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+
+
 def get_database_path() -> str:
     return os.environ.get("DATABASE_PATH", str(DATA_DIR / "champions_club.db"))
 

@@ -21,6 +21,7 @@ from ..services.bar_service import (
     update_kds_status,
     update_table_status,
 )
+from ..services.telegram_service import notify_bar_order_created
 from ..time_utils import to_ist_date_string
 
 router = APIRouter(prefix="/bar", tags=["Bar & Cafeteria"])
@@ -143,6 +144,7 @@ def create_order(
     ),
 ):
     order = create_bar_order({**body.model_dump(), "staffUserId": user.id})
+    notify_bar_order_created(order)
     return {"order": order}
 
 
@@ -161,6 +163,7 @@ def create_member_order(
             "staffUserId": None,
         }
     )
+    notify_bar_order_created(order)
     return {"order": order}
 
 

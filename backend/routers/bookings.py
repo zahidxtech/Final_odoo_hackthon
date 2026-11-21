@@ -24,6 +24,7 @@ from ..services.booking_service import (
     reschedule_booking,
     update_booking_attendance,
 )
+from ..services.telegram_service import notify_booking_created
 from ..time_utils import to_ist_date_string
 
 router = APIRouter(prefix="/bookings", tags=["Courts & Bookings"])
@@ -147,6 +148,7 @@ def trial_booking(body: TrialBookingRequest):
         "bookingType": "TRIAL",
         "notes": "Online trial session booking",
     })
+    notify_booking_created(booking)
     return {"booking": booking}
 
 
@@ -185,6 +187,7 @@ def booking_create(
         "memberId": effective_member,
         "actorUserId": user.id,
     })
+    notify_booking_created(booking)
     return {"booking": booking}
 
 
