@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Alpha Sports Club — Sports Club Management System
 
 A unified full-stack sports club platform combining a **Public Club Website**, **Member Portal**, **Staff Back-Office (Front Desk, Bar & KDS, Pro Shop POS/Inventory, CRM, HR & Payroll)**, and **Owner Financial & Executive Dashboard**.
@@ -88,3 +89,7 @@ All demo accounts use password **`Password@123`** (or click any 1-click role car
    - Maximum `2` active bookings per member per day; cancelling frees the daily slot and issues credit if cancelled `>= 4 hours` before start.
    - Under-18 registrants are automatically restricted to the **Junior Academy** plan.
 5. **Simulated Gateways:** Cash, Card, UPI, Online, and Bank Transfer payments are recorded immediately in the `payments` and `transactions` ledger; member reminders are logged to the `notifications` table.
+=======
+# Final_odoo_hackthon
+Event: Odoo × LPU Hackathon 2026  Venue: Lovely Professional University, Jalandhar  Date: 21 November 2026
+>>>>>>> 25413921c2c1f24a8219c9de6ae3f19280c20d5b
