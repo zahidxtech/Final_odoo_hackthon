@@ -65,7 +65,7 @@ function RequireRoles({ allowed, children }: { allowed: UserRole[]; children: Re
   const { user, loading } = useAuth();
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#070E1A] text-sm text-slate-500">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 text-sm text-slate-500">
         Verifying session...
       </div>
     );

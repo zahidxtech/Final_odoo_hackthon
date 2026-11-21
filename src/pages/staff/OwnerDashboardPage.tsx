@@ -51,7 +51,7 @@ export interface OwnerDashboardPayload {
   };
 }
 
-const CHART_COLORS = ['#A3E635', '#38BDF8', '#F59E0B', '#A78BFA', '#FB7185'];
+const CHART_COLORS = ['#637545', '#9BA685', '#455230', '#7F9161', '#C4CCB4'];
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS = ['06', '08', '10', '12', '14', '16', '18', '20'];
 
@@ -207,12 +207,12 @@ export function DashboardReportView({
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.dailyTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.25} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#9BA685" opacity={0.3} />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={(v) => String(v).slice(5)} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Area type="monotone" dataKey="revenue" name="Revenue (₹)" stroke="#A3E635" fill="#A3E635" fillOpacity={0.2} />
-                <Area type="monotone" dataKey="expenses" name="Expenses (₹)" stroke="#FB7185" fill="#FB7185" fillOpacity={0.15} />
+                <Area type="monotone" dataKey="revenue" name="Revenue (₹)" stroke="#637545" fill="#637545" fillOpacity={0.2} />
+                <Area type="monotone" dataKey="expenses" name="Expenses (₹)" stroke="#9BA685" fill="#9BA685" fillOpacity={0.2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -253,11 +253,11 @@ export function DashboardReportView({
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={methodData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.25} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#9BA685" opacity={0.3} />
                 <XAxis dataKey="method" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Bar dataKey="amountInr" name="Amount (₹)" fill="#38BDF8" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="amountInr" name="Amount (₹)" fill="#637545" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

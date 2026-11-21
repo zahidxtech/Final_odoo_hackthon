@@ -291,7 +291,7 @@ export function QrScannerModal({ open, onClose, onScan }: QrScannerModalProps) {
       aria-modal="true"
       aria-labelledby="qr-scanner-title"
     >
-      <div className="w-full max-w-lg bg-white dark:bg-[#0A1324] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">

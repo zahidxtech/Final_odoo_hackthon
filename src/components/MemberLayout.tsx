@@ -17,6 +17,7 @@ import { useCart } from '../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
+import clubLogo from '../assets/images/alpha-sports-club-logo.png';
 
 export function MemberLayout() {
   const { user, logout } = useAuth();
@@ -42,11 +43,12 @@ export function MemberLayout() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900 dark:bg-[#070E1A] dark:text-slate-100">
+    <div className="min-h-screen flex bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1324]">
+      <aside className="hidden lg:flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="px-6 h-16 flex items-center border-b border-slate-200 dark:border-slate-800">
-          <Link to="/" className="font-display text-lg font-bold tracking-tight whitespace-nowrap">
+          <Link to="/" className="inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight whitespace-nowrap">
+            <img src={clubLogo} alt="" className="h-10 w-8 object-contain" />
             Alpha Sports Club
           </Link>
         </div>
@@ -105,9 +107,12 @@ export function MemberLayout() {
 
       {/* Main Column */}
       <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0">
-        <header className="sticky top-0 z-30 h-14 px-4 lg:px-8 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-[#070E1A]/90 backdrop-blur-md">
+        <header className="sticky top-0 z-30 h-14 px-4 lg:px-8 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <span className="lg:hidden font-display font-bold text-base">Alpha Sports Club</span>
+            <span className="lg:hidden inline-flex items-center gap-1.5 font-display font-bold text-sm">
+              <img src={clubLogo} alt="" className="h-8 w-6 object-contain" />
+              Alpha Sports Club
+            </span>
             <span className="hidden lg:inline text-xs font-medium text-slate-500 dark:text-slate-400">
               Member Portal · {user?.memberCode}
             </span>
@@ -138,7 +143,7 @@ export function MemberLayout() {
       </div>
 
       {/* Mobile Fixed Bottom Tab Bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-[#0A1324]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 grid grid-cols-6 items-center">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 grid grid-cols-6 items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (

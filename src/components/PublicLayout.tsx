@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Sun, Moon } from 'lucide-react';
+import { ArrowRight, Clock, MapPin, ShoppingBag, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../context/ThemeContext';
 import { CartDrawer } from './CartDrawer';
+import clubLogo from '../assets/images/alpha-sports-club-logo.png';
 
 export function PublicLayout() {
   const { user } = useAuth();
@@ -19,15 +20,16 @@ export function PublicLayout() {
     : '/login';
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 dark:bg-[#070E1A] dark:text-slate-100">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       {/* Strict 3-Zone Top Bar Contract */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-[#070E1A]/90 border-b border-slate-200 dark:border-slate-800/80">
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800/80">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
           {/* Zone 1: Single-line brand wordmark */}
           <Link
             to="/"
-            className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0"
           >
+            <img src={clubLogo} alt="" className="h-10 w-8 object-contain" />
             Alpha Sports Club
           </Link>
 
@@ -114,27 +116,80 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      {/* Quiet Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#050A14]">
-        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-sm text-slate-500 dark:text-slate-400">
-          <div className="space-y-1">
-            <div className="font-display font-semibold text-slate-900 dark:text-white">Alpha Sports Club</div>
-            <p className="text-xs">100 Feet Road, Indiranagar, Bengaluru · Open Daily 06:00 – 22:00 IST</p>
+      <footer className="border-t border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 font-display font-semibold text-slate-900 dark:text-white">
+                <img src={clubLogo} alt="" className="h-9 w-8 object-contain" />
+                Alpha Sports Club
+              </div>
+              <p className="max-w-xs text-sm leading-relaxed">
+                Championship courts, cricket nets, padel, and a courtside lounge, all in one club.
+              </p>
+              <div className="flex items-start gap-2 text-sm">
+                <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-lime-500" />
+                <span>100 Feet Road, Indiranagar, Bengaluru 560038</span>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
+                Explore
+              </h2>
+              <ul className="space-y-3 text-sm">
+                <li><Link to="/" className="hover:text-slate-900 dark:hover:text-white">Club overview</Link></li>
+                <li><Link to="/availability" className="hover:text-slate-900 dark:hover:text-white">Live court availability</Link></li>
+                <li><Link to="/plans" className="hover:text-slate-900 dark:hover:text-white">Membership plans</Link></li>
+                <li><Link to="/shop" className="hover:text-slate-900 dark:hover:text-white">Pro Shop</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
+                At the club
+              </h2>
+              <ul className="space-y-3 text-sm">
+                <li>Tennis, cricket, padel &amp; badminton</li>
+                <li>Pro Shop and courtside cafe</li>
+                <li>Friday Social Mixer · 19:00 IST</li>
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
+                Plan your visit
+              </h2>
+              <div className="flex items-start gap-2 text-sm">
+                <Clock className="w-4 h-4 mt-0.5 shrink-0 text-lime-500" />
+                <span>Open daily · 06:00–22:00 IST</span>
+              </div>
+              <p className="text-sm leading-relaxed">
+                Book a trial session to explore the facilities and find your next game.
+              </p>
+              <Link
+                to="/enquiry"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-lime-400 hover:underline"
+              >
+                Book a trial <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-6 text-xs">
-            <Link to="/availability" className="hover:text-slate-900 dark:hover:text-white">Live Courts</Link>
-            <Link to="/plans" className="hover:text-slate-900 dark:hover:text-white">Membership Plans</Link>
-            <Link to="/shop" className="hover:text-slate-900 dark:hover:text-white">Pro Shop</Link>
-            <Link to="/enquiry" className="hover:text-slate-900 dark:hover:text-white">Book a Trial</Link>
-            <a href="/api/docs" target="_blank" rel="noreferrer" className="hover:text-slate-900 dark:hover:text-white">API Docs</a>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white"
-            >
-              {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </button>
+
+          <div className="mt-10 flex flex-col gap-4 border-t border-slate-200 pt-5 text-xs dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+            <span>© {new Date().getFullYear()} Alpha Sports Club. All rights reserved.</span>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link to="/enquiry" className="hover:text-slate-900 dark:hover:text-white">Trial &amp; Enquiry</Link>
+              <a href="/api/docs" target="_blank" rel="noreferrer" className="hover:text-slate-900 dark:hover:text-white">API Docs</a>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white"
+              >
+                {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </button>
+            </div>
           </div>
         </div>
       </footer>

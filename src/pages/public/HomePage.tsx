@@ -271,7 +271,7 @@ export function HomePage() {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <ShoppingBag className="w-4 h-4 text-lime-500" />
-            Browse All 40 Products
+            Browse Pro Shop
           </Link>
         </div>
       </section>

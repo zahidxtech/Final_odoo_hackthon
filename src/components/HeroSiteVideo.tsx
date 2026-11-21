@@ -77,7 +77,7 @@ export function HeroSiteVideo() {
 
   return (
     <>
-      <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-[#070E1A] flex flex-col justify-between h-full">
+      <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex flex-col justify-between h-full">
         {/* 16:9 HD Walkthrough Video */}
         <div className="relative aspect-video w-full bg-slate-950 overflow-hidden flex-1">
           <video
@@ -130,7 +130,7 @@ export function HeroSiteVideo() {
         </div>
 
         {/* Clickable Chapter Scrubber Bar */}
-        <div className="grid grid-cols-5 border-t border-slate-800 bg-[#0A1324] divide-x divide-slate-800">
+        <div className="grid grid-cols-5 border-t border-slate-800 bg-slate-900 divide-x divide-slate-800">
           {CHAPTERS.map((chap) => {
             const isActive = activeChapter.id === chap.id;
             return (

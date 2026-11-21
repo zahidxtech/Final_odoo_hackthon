@@ -5,6 +5,7 @@ import { Printer } from 'lucide-react';
 import { apiFetch } from '../../lib/api';
 import { formatIstDate } from '../../lib/format';
 import { DashboardReportView, type OwnerDashboardPayload } from './OwnerDashboardPage';
+import clubLogo from '../../assets/images/alpha-sports-club-logo.png';
 
 export function SharedReportPage() {
   const { token } = useParams<{ token: string }>();
@@ -16,10 +17,13 @@ export function SharedReportPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#070E1A] text-slate-900 dark:text-slate-100">
-      <header className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1324] px-6 py-4 flex items-center justify-between no-print">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <header className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 flex items-center justify-between no-print">
         <div>
-          <Link to="/" className="font-display text-lg font-bold">Alpha Sports Club</Link>
+          <Link to="/" className="inline-flex items-center gap-2 font-display text-lg font-bold">
+            <img src={clubLogo} alt="" className="h-10 w-8 object-contain" />
+            Alpha Sports Club
+          </Link>
           <span className="ml-3 text-xs text-slate-500">Read-Only Financial Report</span>
         </div>
         <div className="flex items-center gap-3">

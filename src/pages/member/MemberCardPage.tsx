@@ -54,7 +54,7 @@ export function MemberCardPage() {
       </div>
 
       {/* Membership Card */}
-      <div className="bg-[#0A1324] text-white border border-slate-700 rounded-2xl p-8 shadow-2xl space-y-6">
+      <div className="bg-slate-900 text-white border border-slate-700 rounded-2xl p-8 shadow-2xl space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-xs font-semibold tracking-widest uppercase text-lime-400">

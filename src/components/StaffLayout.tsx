@@ -22,6 +22,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
 import { formatIstDate } from '../lib/format';
+import clubLogo from '../assets/images/alpha-sports-club-logo.png';
 
 interface NavEntry {
   to: string;
@@ -77,15 +78,16 @@ export function StaffLayout() {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900 dark:bg-[#070E1A] dark:text-slate-100">
+    <div className="min-h-screen flex bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0A1324] transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-transform lg:static lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="px-6 h-16 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
-          <Link to="/" className="font-display text-lg font-bold tracking-tight whitespace-nowrap">
+          <Link to="/" className="inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight whitespace-nowrap">
+            <img src={clubLogo} alt="" className="h-10 w-8 object-contain" />
             Alpha Sports Club
           </Link>
           <button
@@ -162,7 +164,7 @@ export function StaffLayout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 h-16 px-4 lg:px-8 flex items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-[#070E1A]/90 backdrop-blur-md no-print">
+        <header className="sticky top-0 z-30 h-16 px-4 lg:px-8 flex items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md no-print">
           <div className="flex items-center gap-3 flex-1 max-w-md relative">
             <button
               type="button"

@@ -1,11 +1,36 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-slate-50: #ebebd8;
+  --color-slate-100: #f2f2e7;
+  --color-slate-200: #e1e3d1;
+  --color-slate-300: #cbd0bd;
+  --color-slate-400: #9ba685;
+  --color-slate-500: #637545;
+  --color-slate-600: #455230;
+  --color-slate-700: #455230;
+  --color-slate-800: #3b472b;
+  --color-slate-900: #455230;
+  --color-slate-950: #303b24;
+  --color-white: #f7f7ed;
+  --color-black: #303b24;
+  --color-lime-300: #b4bea3;
+  --color-lime-400: #9ba685;
+  --color-lime-500: #637545;
+  --color-lime-600: #455230;
+}
+
 @layer base {
   :root {
     --font-display: 'Outfit', system-ui, sans-serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
   }
 
   body {
