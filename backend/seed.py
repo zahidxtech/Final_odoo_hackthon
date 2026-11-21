@@ -636,31 +636,6 @@ def seed_database(db: Database | None = None, *, reset: bool = True) -> None:
             ("Aerosensa 50 Feather Shuttlecocks (12)", "BALLS", "Yonex", 240000, 160000, ["Speed 77"], True),
             ("Practice Pressureless Tennis Bucket (60)", "BALLS", "Babolat", 520000, 330000, ["60 Balls"], False),
             ("Indoor Cricket Soft Training Balls (6)", "BALLS", "Gray-Nicolls", 95000, 58000, ["Pack of 6"], False),
-            ("Mavis 350 Nylon Shuttles (6)", "BALLS", "Yonex", 92000, 59000, ["Medium"], False),
-            ("Vapor Pro 2 Hard Court Shoes", "SHOES", "Nike", 1180000, 760000, ["UK 8", "UK 9", "UK 10"], False),
-            ("Gel-Resolution 9 Clay/Hard", "SHOES", "ASICS", 1290000, 840000, ["UK 8", "UK 9", "UK 10"], False),
-            ("Barricade 13 Court Trainers", "SHOES", "Adidas", 1150000, 740000, ["UK 7", "UK 8", "UK 9"], False),
-            ("Hack Hybrid Padel Shoes", "SHOES", "Bullpadel", 980000, 620000, ["UK 8", "UK 9"], True),
-            ("Power Cushion 65Z3 Badminton", "SHOES", "Yonex", 1050000, 680000, ["UK 8", "UK 9"], False),
-            ("22Yds Turf Cricket Spike Shoes", "SHOES", "DSC", 680000, 430000, ["UK 8", "UK 9", "UK 10"], False),
-            ("Junior Court Ace Sneakers", "SHOES", "ASICS", 520000, 320000, ["UK 4", "UK 5"], False),
-            ("Propulse Fury All-Court", "SHOES", "Babolat", 1090000, 700000, ["UK 8", "UK 9"], False),
-            ("Pro Overgrip 12-Pack White", "ACCESSORIES", "Wilson", 145000, 85000, ["12-Pack"], True),
-            ("Luxilon ALU Power 125 String Reel", "ACCESSORIES", "Luxilon", 165000, 98000, ["12.2m Set"], False),
-            ("Tour 9-Pack Thermal Racket Bag", "ACCESSORIES", "Head", 790000, 490000, ["9-Racket"], False),
-            ("Padded Cricket Batting Gloves", "ACCESSORIES", "SG", 245000, 150000, ["Adult RH"], False),
-            ("Titanium Grill Cricket Helmet", "ACCESSORIES", "Masuri", 620000, 390000, ["M", "L"], False),
-            ("Shockout Padel Wristbands (Pair)", "ACCESSORIES", "Bullpadel", 55000, 30000, ["One Size"], False),
-            ("Insulated 1L Stainless Club Flask", "ACCESSORIES", "Alpha Sports", 110000, 58000, ["1 Litre"], False),
-            ("Vibration Dampener Twin Pack", "ACCESSORIES", "Babolat", 45000, 22000, ["Twin Pack"], False),
-            ("Alpha Sports Club Match Polo Navy", "APPAREL", "Alpha Sports", 220000, 115000, ["M", "L", "XL"], False),
-            ("Dri-FIT Advantage Tennis Shorts", "APPAREL", "Nike", 280000, 170000, ["M", "L"], False),
-            ("Court Pleated Performance Skort", "APPAREL", "Adidas", 310000, 185000, ["S", "M", "L"], False),
-            ("Cricket Training Jersey Lime Trim", "APPAREL", "Alpha Sports", 195000, 100000, ["M", "L", "XL"], False),
-            ("Breathable Padel Cap Navy", "APPAREL", "Babolat", 120000, 65000, ["Adjustable"], True),
-            ("Cushioned Crew Sports Socks (3-Pack)", "APPAREL", "ASICS", 85000, 45000, ["M", "L"], False),
-            ("Warmup Track Jacket Charcoal", "APPAREL", "Alpha Sports", 420000, 240000, ["M", "L", "XL"], False),
-            ("Junior Academy Tee Lime", "APPAREL", "Alpha Sports", 135000, 70000, ["YS", "YM"], False),
         ]
 
         variant_rows: list[dict[str, Any]] = []
@@ -680,7 +655,6 @@ def seed_database(db: Database | None = None, *, reset: bool = True) -> None:
             "Aerosensa 50 Feather Shuttlecocks (12)": "/src/assets/images/products/alpha-badminton-shuttle-tube.webp",
             "Practice Pressureless Tennis Bucket (60)": "/src/assets/images/products/alpha-tennis-balls-bucket.webp",
             "Indoor Cricket Soft Training Balls (6)": "/src/assets/images/products/alpha-cricket-soft-balls-box.webp",
-            "Mavis 350 Nylon Shuttles (6)": "/src/assets/images/products/alpha-badminton-shuttle-tube-alt.webp",
         }
         for idx, (pname, pcat, pbrand, pprice, pcost, psizes, low_stock) in enumerate(catalog_seed):
             sku = f"CC-{pcat[:3]}-{idx + 1:03d}"
